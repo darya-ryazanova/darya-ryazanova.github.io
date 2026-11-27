@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><script id="navigation-bootstrap">/* R15 early functional navigation. Inline in head before styles/body. */
+(() => {
+  'use strict';
+  if (window.DaryaNavigation) return;
+  const root = document.documentElement;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const desktop = matchMedia('(min-width: 901px)');
+  const lowPower = Boolean(navigator.connection?.saveData || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2));
+  let keyboard = false, open = false, visualHook = null;
+  const nodes = () => ({ button: document.querySelector('.menu-toggle'), nav: document.getElementById('navigation') });
+  const canMove = () => !reduce.matches && !lowPower && !keyboard && !document.hidden;
+  function setOpen(value, options = {}) {
+    const { button, nav } = nodes();
+    if (!button || !nav) return;
+    open = Boolean(value && !desktop.matches);
+    button.setAttribute('aria-expanded', String(open));
+    nav.inert = !desktop.matches && !open;
+    const instant = Boolean(options.instant || !canMove());
+    if (visualHook) visualHook(nav, open, instant);
+    else nav.classList.toggle('is-open', open);
+  }
+  function syncPreference() {
+    root.classList.toggle('motion-static', reduce.matches || lowPower);
+    if (reduce.matches || lowPower) root.classList.remove('motion-ready');
+    setOpen(open, { instant: true });
+  }
+  document.addEventListener('keydown', event => {
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    keyboard = true;
+    root.classList.add('keyboard-input');
+    root.classList.remove('motion-ready');
+    setOpen(open, { instant: true });
+    if (event.key === 'Escape' && open) {
+      setOpen(false, { instant: true });
+      nodes().button?.focus();
+    }
+  }, true);
+  document.addEventListener('pointerdown', () => {
+    keyboard = false;
+    root.classList.remove('keyboard-input');
+  }, true);
+  document.addEventListener('click', event => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target) return;
+    if (target.closest('.menu-toggle')) {
+      setOpen(!open, { instant: event.detail === 0 });
+      return;
+    }
+    // Native hash navigation still works if the deferred enhancement fails.
+    if (target.closest('#navigation a')) {
+      const link = target.closest('a');
+      const hash = link?.getAttribute('href');
+      if (open && hash?.startsWith('#')) {
+        const section = document.getElementById(hash.slice(1));
+        if (section) { section.setAttribute('tabindex', '-1'); section.focus({ preventScroll: true }); }
+      }
+      setOpen(false, { instant: true });
+    } else if (!target.closest('.header-inner')) setOpen(false);
+  });
+  document.addEventListener('focusin', event => {
+    if (event.target instanceof Element && !event.target.closest('.header-inner')) setOpen(false, { instant: true });
+  });
+  desktop.addEventListener('change', () => setOpen(false, { instant: true }));
+  reduce.addEventListener('change', syncPreference);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { root.classList.remove('motion-ready'); setOpen(false, { instant: true }); }
+  });
+  window.addEventListener('pageshow', event => {
+    if (event.persisted) { root.classList.remove('motion-ready'); setOpen(false, { instant: true }); }
+  });
+  document.addEventListener('DOMContentLoaded', () => setOpen(open, { instant: true }), { once: true });
+  window.DaryaNavigation = {
+    setOpen, canMove,
+    get keyboard() { return keyboard; },
+    get open() { return open; },
+    enhance(hook) { visualHook = hook; setOpen(open, { instant: true }); }
+  };
+  root.classList.toggle('motion-static', reduce.matches || lowPower);
+  if (canMove()) root.classList.add('motion-ready');
+  // All native handlers now exist; failure of deferred JS cannot strand a hidden nav.
+  root.classList.add('js-ready');
+})();
+</script><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#2F4B45">
+<title>Рязанова Дарья Владимировна — врач-психиатр, Курск</title>
+<meta name="description" content="Дарья Владимировна Рязанова — врач-психиатр в Курске. Первая квалификационная категория, клиническая практика с 2019 года. Направления работы, опыт, образование и контакты.">
+<meta property="og:title" content="Дарья Рязанова — врач-психиатр">
+<link rel="canonical" href="https://darya-ryazanova.github.io/">
+<meta property="og:url" content="https://darya-ryazanova.github.io/">
+<meta property="og:image" content="https://darya-ryazanova.github.io/assets/portrait-clean.png">
+<meta property="og:image:width" content="675"><meta property="og:image:height" content="900">
+<meta property="og:image:alt" content="Дарья Владимировна Рязанова, врач-психиатр">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:description" content="Профессиональная практика с 2019 года. Направления работы, образование и квалификация. Курск."><meta property="og:type" content="website">
+<link rel="preload" href="assets/portrait-adobe.webp" as="image" type="image/webp" fetchpriority="high">
+<link rel="preload" href="assets/fonts/golos-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/cormorant-medium.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/fonts.css?v=6"><link rel="stylesheet" href="design.css?v=20"><script src="script.js?v=15" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Перейти к содержанию</a>
+<header class="site-header"><div class="header-inner">
+<a class="identity" href="#profile" title="В начало страницы"><img src="assets/psi.svg" width="44" height="48" alt=""><span>Врач-психиатр<small>Курск</small></span></a>
+<button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation">Меню<span aria-hidden="true"></span></button>
+<nav id="navigation" aria-label="Разделы страницы"><a href="#practice">Направления</a><a href="#experience">Опыт</a><a href="#qualification">Образование</a><a href="#reviews">Отзывы</a><a class="nav-contact" href="#contacts">Контакты</a></nav>
+</div></header>
+<main id="main">
+<section class="hero wrap" id="profile" aria-labelledby="name">
+<div class="hero-heading"><h1 id="name" aria-label="Рязанова Дарья Владимировна">Рязанова<span>Дарья Владимировна</span></h1></div>
+<figure class="portrait portrait-cutout"><picture><source srcset="assets/portrait-adobe.webp" type="image/webp"><img src="assets/portrait-adobe.png" width="675" height="900" fetchpriority="high" decoding="async" alt="Портрет врача"></picture></figure>
+<div class="hero-actions"><a class="button" href="mailto:serdtce-raya@mail.ru">Написать на почту</a><a class="text-link" href="#reviews">Читать отзывы</a></div>
+<div class="hero-details"><p class="hero-lead">Диагностика и лечение психических расстройств</p>
+<p class="hero-description">Клиническая практика с 2019 года. Работа с подростками, взрослыми и пациентами пожилого возраста.</p>
+</div>
+<div class="hero-facts"><div><strong>Первая категория</strong><span>С 11 сентября 2026 года</span></div><div><strong>Психиатрия</strong><span>Аккредитация до 27.08.2029</span></div><div><strong>Частная практика</strong><span>С 2024 года</span></div></div>
+</section>
+<div class="intro-band"><section class="section wrap about-section" id="about" aria-labelledby="about-title">
+<div class="section-heading"><h2 id="about-title">О враче</h2></div>
+<div class="about-profile"><p class="about-lead">Лечебная практика и опыт руководства психиатрическими отделениями.</p><div class="about-scope"><h3>Клинический опыт</h3><p>Общепсихиатрические отделения, недобровольная госпитализация и дневной стационар. Суицидология, первый психотический эпизод и геронтологическая психиатрия.</p></div></div>
+<div class="about-principles"><h3>Принципы работы</h3><ul><li><h4>Научный подход</h4><p>Современные научные данные и клинические рекомендации.</p></li><li><h4>Внимание к человеку</h4><p>Индивидуальный подход к каждому пациенту.</p></li><li><h4>Ответственность и уважение</h4><p>Уважительное общение с пациентом и его родственниками.</p></li></ul></div>
+</section></div>
+<section class="practice-section" id="practice" aria-labelledby="practice-title"><div class="section wrap"><div class="section-heading"><h2 id="practice-title">Направления работы</h2><p>Диагностика, уточнение диагноза и лечение</p></div>
+<div class="directions">
+<article class="direction-card"><h3>Тревога, стресс и панические атаки</h3><p>Генерализованное тревожное и паническое расстройства, обсессивно-компульсивное расстройство. Расстройства адаптации, реакции на стресс, горе и утрату. Соматоформные расстройства и психосоматические проявления.</p></article>
+<article class="direction-card"><h3>Депрессия и расстройства настроения</h3><p>Депрессивные расстройства, в том числе рекуррентные, тревожно-депрессивные состояния. Биполярное аффективное расстройство и другие расстройства настроения.</p></article>
+<article class="direction-card"><h3>Нарушения сна</h3><p>Бессонница и другие клинически значимые нарушения сна.</p></article>
+<article class="direction-card"><h3>Когнитивные и органические расстройства</h3><p>Когнитивные нарушения и деменции различной этиологии. Психические и поведенческие расстройства органического генеза, органические изменения личности и поведения.</p></article>
+<article class="direction-card"><h3>Расстройства шизофренического спектра</h3><p>Шизотипическое расстройство, шизофрения и другие расстройства шизофренического спектра. Другие эндогенные психические заболевания и психотические состояния.</p></article>
+<article class="direction-card"><h3>Эмоциональные и поведенческие трудности</h3><p>Нарушения эмоциональной регуляции и поведения, эмоциональное истощение, сниженная самооценка, трудности адаптации и межличностного взаимодействия. Диагностика и коррекция аутоагрессивного и самоповреждающего поведения.</p></article>
+<article class="direction-card direction-wide"><h3>Детская и подростковая психиатрия</h3><p>Эмоциональные, поведенческие и адаптационные расстройства у детей и подростков. Нарушения поведения и эмоционального развития, СДВГ.</p></article>
+</div></div></section>
+<section class="section wrap" id="experience" aria-labelledby="experience-title"><div class="section-heading"><h2 id="experience-title">Опыт работы</h2><p>Государственная и частная клиническая практика</p></div>
+<div class="experience-list">
+<article class="experience-item"><p class="date">С сентября 2019</p><div><h3>Курская клиническая психиатрическая больница</h3><p class="role">Врач-психиатр, исполнение обязанностей заведующей отделениями</p><p>ОБУЗ «ККПБ имени святого великомученика и целителя Пантелеимона». Работа в подразделениях круглосуточного и дневного стационара.</p><div class="career-stages"><div class="current-activity"><p><strong>Текущая деятельность:</strong> врач-психиатр мужского геронтологического отделения; врач организационно-методического отдела. Организационно-методическая работа — с 2025 года.</p></div><div class="career-history"><p><strong>2020–2022:</strong> <span>отделение недобровольной госпитализации; исполнение обязанностей заведующей мужскими и геронтологическими отделениями.</span></p><p><strong>2022–2024:</strong> <span>врач-психиатр, исполняющая обязанности заведующей дневным психиатрическим стационаром для взрослого населения.</span></p><p><strong>2024–2025:</strong> <span>суицидологическое отделение и отделение первого психотического эпизода № 1; исполнение обязанностей заведующей.</span></p></div></div></div></article>
+<article class="experience-item"><p class="date">С августа 2025</p><div><h3>Клиника «Медавико», Курск</h3><p>Врач-психиатр.</p></div></article>
+<article class="experience-item"><p class="date">Май 2024 — март 2025</p><div><h3>Клиника «ЭКСПЕРТ», Курск</h3><p>Врач-психиатр.</p></div></article>
+</div></section>
+
+
+<section class="qualification-section" id="qualification" aria-labelledby="qualification-title"><div class="section wrap"><div class="section-heading"><h2 id="qualification-title">Образование и квалификация</h2></div>
+<div class="qualification-grid"><article class="education-card"><h3>Базовое образование</h3><div class="education-entry"><p class="date">2017</p><h4>Курский государственный медицинский университет</h4><p>Специальность «Лечебное дело». Окончание — июнь 2017 года.</p></div><div class="education-entry"><p class="date">2017–2019</p><h4>Ординатура по психиатрии</h4><p>КГМУ, на базе Курской областной психиатрической больницы. Окончание с отличием в августе 2019 года.</p></div></article>
+<article class="accreditation-card"><h3>Подтверждение квалификации</h3><dl><div><dt>Категория</dt><dd>Первая квалификационная категория с 11.09.2026</dd></div><div><dt>Аккредитация</dt><dd>Психиатрия · 27.08.2024 — 27.08.2029</dd></div><div><dt>Организация</dt><dd>РМАНПО Минздрава России</dd></div><div><dt>Запись об аккредитации</dt><dd>7724 032220308</dd></div><div><dt>Запись специалиста</dt><dd>2022.2501845</dd></div></dl></article></div>
+<details class="courses"><summary>Повышение квалификации <span aria-hidden="true">+</span></summary><div class="course-list"><p><strong>2026</strong><span>Психиатрия — два курса по 72 часа.</span></p><p><strong>2025</strong><span>Детская психиатрия — 144 ак. часа. Организация здравоохранения и общественное здоровье — 72 часа.</span></p><p><strong>2024</strong><span>Сексология — 36 часов.</span></p><p><strong>2023</strong><span>Современная концепция расстройств настроения в рамках биполярного аффективного расстройства — 36 часов. Невротические, связанные со стрессом и соматоформные расстройства — 36 часов.</span></p><p><strong>2022</strong><span>Клиническая суицидология — 72 часа. Экспертиза временной нетрудоспособности — 36 часов.</span></p><p><strong>2021</strong><span>Современные подходы к диагностике и принципы терапии психических и неврологических заболеваний, протекающих с тревожной и тревожно-депрессивной симптоматикой — 36 часов.</span></p></div></details>
+
+</div></section>
+<div class="science-band"><article class="science wrap"><h3>Научная деятельность</h3><div><p><strong>Диплом I степени за лучший научный доклад</strong> — «Суицидология в клинической практике врача-психиатра», II Международная научно-практическая конференция «Современная медицина: взгляд молодого врача», май 2024 года.</p><p>Три научные публикации за 2018–2022 годы:</p><ul class="publication-list"><li>«Расстройства мышления и волевой активности в структуре шизофренического дефекта» — две публикации, 2018 и 2019 годы.</li><li>«Опыт применения препарата Реагила при резистентном течении шизофрении» — 2022 год.</li></ul></div></article></div>
+<section class="reviews-section section wrap" id="reviews" aria-labelledby="reviews-title">
+<div class="section-heading"><h2 id="reviews-title">Отзывы пациентов</h2><p>Истории и впечатления о приёме — в профилях на медицинских сервисах.</p></div>
+<div class="review-platforms">
+<article class="review-platform"><div><h3>ПроДокторов</h3><p>Отзывы пациентов, сведения об образовании и профессиональной практике.</p></div><a class="button" href="https://prodoctorov.ru/kursk/vrach/808230-ryazanova/" target="_blank" rel="noopener noreferrer" aria-label="Открыть отзывы на ПроДокторов, откроется в новой вкладке">Открыть отзывы</a></article>
+<article class="review-platform"><div><h3>НаПоправку</h3><p>Отзывы о приёме и профиль врача на сервисе НаПоправку.</p></div><a class="button button-outline" href="https://napopravku.ru/kursk/doctor-profile/rjazanova-darja-vladimirovna/" target="_blank" rel="noopener noreferrer" aria-label="Открыть отзывы на НаПоправку, откроется в новой вкладке">Открыть отзывы</a></article>
+</div><p class="external-note">Ссылки откроются на внешних сайтах в новой вкладке.</p></section>
+<section class="contact-section" id="contacts" aria-labelledby="contacts-title"><div class="wrap contact-layout"><h2 id="contacts-title">Связаться со мной</h2><div class="contact-content"><p>Курск. По профессиональным вопросам и для уточнения возможности консультации напишите на электронную почту.</p><div class="contact-details"><a class="email" href="mailto:serdtce-raya@mail.ru">serdtce-raya@mail.ru</a><div class="contact-actions"><a class="button button-light" href="mailto:serdtce-raya@mail.ru">Написать письмо</a><button class="copy-email" type="button" data-copy-email>Скопировать адрес</button></div><p class="copy-status" role="status" aria-live="polite"></p></div></div></div></section>
+</main>
+<footer class="wrap"><span>Профессиональное резюме · Курск</span><a href="#profile">В начало страницы</a></footer>
+</body></html>
+
